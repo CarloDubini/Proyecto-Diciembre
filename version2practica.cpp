@@ -33,7 +33,7 @@ int main()
 {
 	int opcion, max_cartas = 0, ganador = 0;
 	double puntosJugador = 0, puntosMaquina = 0;
-	bool terminado = false;
+	bool terminado = false, seguir = true;
 	string nombre_fich;
 
 	opcion = menu();
@@ -86,8 +86,14 @@ int main()
 			{
 				tCartasPorAparecer cartas;
 				iniciarPorAparecer(fich_entrada, cartas);
-				modoChumano(fich_entrada, cartas, puntosJugador);
-				modoCmaquina(fich_entrada, cartas, puntosJugador, puntosMaquina);
+				fich_entrada.close();
+				fich_entrada.open(nombre_fich);
+				while (puntosMaquina<7.5 && esProbablePasarse(puntosMaquina, cartas))
+				{
+					modoChumano(fich_entrada, cartas, puntosJugador);
+					modoCmaquina(fich_entrada, cartas, puntosJugador, puntosMaquina);
+					
+				}
 				ganador = determinaGanador(puntosJugador, puntosMaquina);
 				if (ganador == 1)
 				{
@@ -264,7 +270,7 @@ void modoChumano(ifstream& fich_entrada, tCartasPorAparecer cartas, double & pun
 
 	if(seguir)
 	{
-		while (!fich_entrada.eof())
+		while (!fich_entrada.eof() && seguir)
 		{
 			fich_entrada >> carta_robada;
 			puntos += Valores(carta_robada);
@@ -278,7 +284,10 @@ void modoChumano(ifstream& fich_entrada, tCartasPorAparecer cartas, double & pun
 }
 void modoCmaquina(ifstream & fich_entrada, tCartasPorAparecer cartas, double puntosJugador, double & puntos)
 {
+	int carta_robada;
+	bool pasarse = false;
 	
+
 }
 void iniciarPorAparecer(ifstream & fich_entrada, tCartasPorAparecer cartas)
 {
@@ -323,8 +332,6 @@ void iniciarPorAparecer(ifstream & fich_entrada, tCartasPorAparecer cartas)
 			cartas[7] += 1;
 		}
 	}
-
-
 }
 bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas)
 {
@@ -406,4 +413,36 @@ bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas)
 
 	return probab_mayor_50;
 }
-void reducirCartasMazo(tCart
+void reducirCartasMazo(tCartasPorAparecer cartas, int& carta_robada)
+{
+	if (carta_robada > 7)
+	{
+		cartas[0] -= 1;
+	}
+	if (carta_robada == 7)
+	{
+		cartas[7] -= 1;
+	}
+	if (carta_robada == 6)
+	{
+		cartas[6] -= 1;
+	}
+	if (carta_robada == 5)
+	{
+		cartas[5] -= 1;
+	}
+	if (carta_robada == 4)
+	{
+		cartas[4] -= 1;
+	}
+	if (carta_robada == 3)
+	{
+		cartas[3] -= 1;
+	}if (carta_robada == 2)
+	{
+		cartas[2] -= 1;
+	}if (carta_robada == 1)
+	{
+		cartas[1] -= 1;
+	}
+}
