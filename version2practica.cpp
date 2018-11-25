@@ -299,7 +299,7 @@ void modoCmaquina(ifstream & fich_entrada, tCartasPorAparecer cartas, double pun
 		}
 		
 	}
-
+	cout << " la máquina se ha plantado " << endl;
 }
 void iniciarPorAparecer(ifstream & fich_entrada, tCartasPorAparecer cartas)
 {
