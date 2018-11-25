@@ -11,6 +11,7 @@ using namespace std;
 int const HUMANO = 1;
 int const MAQUINA = 2;
 const int MAX = 8;
+
 typedef int tCartasPorAparecer[MAX];
 
 int menu();
@@ -28,7 +29,6 @@ bool comprobarPuntosJug(double puntosJugador, double puntos);
 bool Seguir();
 bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas);
 
-
 int main()
 {
 	int opcion, max_cartas = 0, ganador = 0;
@@ -43,7 +43,7 @@ int main()
 		cin >> nombre_fich;
 		ifstream fich_entrada;
 		fich_entrada.open(nombre_fich);
-		if (!fich_entrada.is_open()) { cout << "Error de Lectura del mazo" << nombre_fich << endl; }
+		if (!fich_entrada.is_open()) { cout << "Error de Lectura del mazo " << nombre_fich << endl; }
 		else
 		{
 			if (opcion == 1)
@@ -65,7 +65,6 @@ int main()
 				{
 					cout << "Ha ganado la maquina." << endl;
 				}
-
 			}
 			if (opcion == 2)
 			{
@@ -287,19 +286,25 @@ void modoCmaquina(ifstream & fich_entrada, tCartasPorAparecer cartas, double pun
 {
 	int carta_robada;
 	bool pasarse = false;
-	while (puntos < puntosJugador && pasarse = false)
+	while (puntos < 7.5 && puntosJugador <= 7.5 && !pasarse)
 	{
 		fich_entrada >> carta_robada;
 		puntos += Valores(carta_robada);
 		cout << "La maquina ha robado un " << carta_robada << " y tiene " << puntos << endl;
 		reducirCartasMazo(cartas, carta_robada);
-		if (puntos == puntosJugador)
+		if (puntos > puntosJugador && !pasarse)
+		{
+			pasarse = true;
+		}
+		if (puntos == puntosJugador && puntos < 7.5)
 		{
 			pasarse = esProbablePasarse(puntos, cartas);
 		}
-		
+		else
+		{
+			pasarse = esProbablePasarse(puntos, cartas);
+		}
 	}
-
 }
 void iniciarPorAparecer(ifstream & fich_entrada, tCartasPorAparecer cartas)
 {
@@ -348,13 +353,22 @@ void iniciarPorAparecer(ifstream & fich_entrada, tCartasPorAparecer cartas)
 bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas)
 {
 	int s_parcial = 0, s_total = 0, sacar = 0;
-	double probabilidad;
+	double probabilidad = 0;
 	bool probab_mayor_50 = false;
-	if (puntosMaquina < 7.5)
+	if (puntosMaquina <= 7.5)
 	{
 		s_total = cartas[0] + cartas[1] + cartas[2] + cartas[3] + cartas[4] + cartas[5] + cartas[6] + cartas[7];
 
-		if (puntosMaquina < 7.5)
+
+		if (puntosMaquina >= 0 && puntosMaquina < 1)
+		{
+			probabilidad = 0;
+		}
+		if (puntosMaquina == 7.5)
+		{
+			probabilidad = 1;
+		}
+		if (puntosMaquina >= 1 && puntosMaquina < 7.5)
 		{
 			if (puntosMaquina >= 1 && puntosMaquina < 2) { sacar = 7; }
 			if (puntosMaquina >= 2 && puntosMaquina < 3) { sacar = 6; }
@@ -367,15 +381,7 @@ bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas)
 			{
 				s_parcial += cartas[i];
 			}
-		}
-		probabilidad = s_parcial / s_total;
-		if (puntosMaquina >= 0 && puntosMaquina < 1)
-		{
-			probabilidad = 0;
-		}
-		if (puntosMaquina == 7.5)
-		{
-			probabilidad = 1;
+			probabilidad = s_parcial / s_total;
 		}
 		if (probabilidad >= 0.5)
 		{
