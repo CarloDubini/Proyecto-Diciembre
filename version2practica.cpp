@@ -43,7 +43,7 @@ int main()
 		cin >> nombre_fich;
 		ifstream fich_entrada;
 		fich_entrada.open(nombre_fich);
-		if (!fich_entrada.is_open()) { cout << "Error de Lectura del mazo" << nombre_fich << endl; }
+		if (!fich_entrada.is_open()) { cout << "Error de Lectura del mazo: " << nombre_fich << endl; }
 		else
 		{
 			if (opcion == 1)
@@ -287,7 +287,7 @@ void modoCmaquina(ifstream & fich_entrada, tCartasPorAparecer cartas, double pun
 {
 	int carta_robada;
 	bool pasarse = false;
-	while (puntos < puntosJugador && pasarse = false)
+	while (pasarse = false && puntos < puntosJugador)
 	{
 		fich_entrada >> carta_robada;
 		puntos += Valores(carta_robada);
