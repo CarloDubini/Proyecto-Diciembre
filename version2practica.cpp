@@ -88,12 +88,8 @@ int main()
 				iniciarPorAparecer(fich_entrada, cartas);
 				fich_entrada.close();
 				fich_entrada.open(nombre_fich);
-				while (puntosMaquina<7.5 && esProbablePasarse(puntosMaquina, cartas))
-				{
-					modoChumano(fich_entrada, cartas, puntosJugador);
-					modoCmaquina(fich_entrada, cartas, puntosJugador, puntosMaquina);
-					
-				}
+				modoChumano(fich_entrada, cartas, puntosJugador);
+				modoCmaquina(fich_entrada, cartas, puntosJugador, puntosMaquina);
 				ganador = determinaGanador(puntosJugador, puntosMaquina);
 				if (ganador == 1)
 				{
@@ -251,9 +247,16 @@ double modoBmaquina(ifstream & fich_entrada, int max_cartas, double puntosJugado
 }
 bool Seguir()
 {
-	bool seguir;
+	int opcion;
+	bool seguir = true;
 	cout << "Desea seguir robando: (1- robar;0- plantarse)" << endl;
-	cin >> seguir;
+	cin >> opcion;
+	while (opcion < 0 || opcion > 1)
+	{
+		cout << "introduzca opcion correcta: ";
+		cin >> opcion;
+	}
+	seguir = opcion;
 	return seguir;
 }
 bool comprobarPuntosJug(double puntosJugador, double puntos)
@@ -268,9 +271,9 @@ void modoChumano(ifstream& fich_entrada, tCartasPorAparecer cartas, double & pun
 	int carta_robada;
 	bool seguir = true;
 
-	if(seguir)
+	if (seguir)
 	{
-		while (!fich_entrada.eof() && seguir)
+		while (seguir)
 		{
 			fich_entrada >> carta_robada;
 			puntos += Valores(carta_robada);
@@ -279,14 +282,23 @@ void modoChumano(ifstream& fich_entrada, tCartasPorAparecer cartas, double & pun
 			seguir = Seguir();
 		}
 	}
-	
-	
 }
 void modoCmaquina(ifstream & fich_entrada, tCartasPorAparecer cartas, double puntosJugador, double & puntos)
 {
 	int carta_robada;
 	bool pasarse = false;
-	
+	while (puntos < puntosJugador && pasarse = false)
+	{
+		fich_entrada >> carta_robada;
+		puntos += Valores(carta_robada);
+		cout << "La maquina ha robado un " << carta_robada << " y tiene " << puntos << endl;
+		reducirCartasMazo(cartas, carta_robada);
+		if (puntos == puntosJugador)
+		{
+			pasarse = esProbablePasarse(puntos, cartas);
+		}
+		
+	}
 
 }
 void iniciarPorAparecer(ifstream & fich_entrada, tCartasPorAparecer cartas)
@@ -298,12 +310,12 @@ void iniciarPorAparecer(ifstream & fich_entrada, tCartasPorAparecer cartas)
 	}
 	while (!fich_entrada.eof())
 	{
-		fich_entrada >> leer_cartas_mazo;		
+		fich_entrada >> leer_cartas_mazo;
 		if (leer_cartas_mazo > 7)
 		{
 			cartas[0] += 1;
 		}
- 		if (leer_cartas_mazo == 1)
+		if (leer_cartas_mazo == 1)
 		{
 			cartas[1] += 1;
 		}
@@ -338,13 +350,10 @@ bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas)
 	int s_parcial = 0, s_total = 0, sacar = 0;
 	double probabilidad;
 	bool probab_mayor_50 = false;
-	if (puntosMaquina !> 7.5)
+	if (puntosMaquina < 7.5)
 	{
 		s_total = cartas[0] + cartas[1] + cartas[2] + cartas[3] + cartas[4] + cartas[5] + cartas[6] + cartas[7];
-		if (puntosMaquina == 0 || puntosMaquina == 0.5)
-		{
-			probabilidad = 0;
-		}
+
 		if (puntosMaquina < 7.5)
 		{
 			if (puntosMaquina >= 1 && puntosMaquina < 2) { sacar = 7; }
@@ -354,14 +363,16 @@ bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas)
 			if (puntosMaquina >= 5 && puntosMaquina < 6) { sacar = 3; }
 			if (puntosMaquina >= 6 && puntosMaquina < 7) { sacar = 2; }
 			if (puntosMaquina == 7) { sacar = 1; }
-			for (int i = sacar; i <= 7; i++)
+			for (int i = sacar; i <= 7.5; i++)
 			{
-				suma_parcial += cartas[i]
+				s_parcial += cartas[i];
 			}
-
 		}
 		probabilidad = s_parcial / s_total;
-
+		if (puntosMaquina >= 0 && puntosMaquina < 1)
+		{
+			probabilidad = 0;
+		}
 		if (puntosMaquina == 7.5)
 		{
 			probabilidad = 1;
