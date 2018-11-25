@@ -217,7 +217,7 @@ double modoA(ifstream & fich_entrada, int max_cartas)
 	}
 	return puntos_loc;
 }
-
+//-----------------------------------------ModoB------------------------------------------------
 double modoBhumano(ifstream & fich_entrada, int max_cartas, double puntosJugador)
 {
 	bool seguir = true;
@@ -262,7 +262,7 @@ bool comprobarPuntosJug(double puntosJugador, double puntos)
 	if (puntosJugador > 7.5 > puntos || puntosJugador < puntos < 7.5) { plantarse = true; }
 	return plantarse;
 }
-
+//-----------------------------------------ModoC------------------------------------------------
 void modoChumano(ifstream& fich_entrada, tCartasPorAparecer cartas, double & puntos)
 {
 	int carta_robada;
@@ -335,82 +335,42 @@ void iniciarPorAparecer(ifstream & fich_entrada, tCartasPorAparecer cartas)
 }
 bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas)
 {
-	int suma_parcial = 0, suma_total = 0;
-	double probabilidad, sacar;
+	int s_parcial = 0, s_total = 0, sacar = 0;
+	double probabilidad;
 	bool probab_mayor_50 = false;
-	if(!probab_mayor_50)
+	if (puntosMaquina !> 7.5)
 	{
-		sacar = 7.5 - puntosMaquina;
-		if (sacar == 0)
+		s_total = cartas[0] + cartas[1] + cartas[2] + cartas[3] + cartas[4] + cartas[5] + cartas[6] + cartas[7];
+		if (puntosMaquina == 0 || puntosMaquina == 0.5)
 		{
-			probab_mayor_50 = true;
+			probabilidad = 0;
 		}
-		if (sacar == 1)
+		if (puntosMaquina < 7.5)
 		{
-			for (int i=1; i< MAX; i++)
+			if (puntosMaquina >= 1 && puntosMaquina < 2) { sacar = 7; }
+			if (puntosMaquina >= 2 && puntosMaquina < 3) { sacar = 6; }
+			if (puntosMaquina >= 3 && puntosMaquina < 4) { sacar = 5; }
+			if (puntosMaquina >= 4 && puntosMaquina < 5) { sacar = 4; }
+			if (puntosMaquina >= 5 && puntosMaquina < 6) { sacar = 3; }
+			if (puntosMaquina >= 6 && puntosMaquina < 7) { sacar = 2; }
+			if (puntosMaquina == 7) { sacar = 1; }
+			for (int i = sacar; i <= 7; i++)
 			{
-				suma_parcial += cartas[i];
+				suma_parcial += cartas[i]
 			}
-		}
-		if (sacar == 2)
-		{
-			for (int i = 2; i < MAX; i++)
-			{
-				suma_parcial += cartas[i];
-			}
-		}
-		if (sacar == 3)
-		{
-			for (int i = 3; i < MAX; i++)
-			{
-				suma_parcial += cartas[i];
-			}
-		}
-		if (sacar == 4)
-		{
-			for (int i = 4; i < MAX; i++)
-			{
-				suma_parcial += cartas[i];
-			}
-		}
-		if (sacar == 5)
-		{
-			for (int i = 5; i < MAX; i++)
-			{
-				suma_parcial += cartas[i];
-			}
-		}
-		if (sacar == 6)
-		{
-			for (int i = 6; i < MAX; i++)
-			{
-				suma_parcial += cartas[i];
-			}
-		}
-		if (sacar == 7)
-		{
-			for (int i = 7; i < MAX; i++)
-			{
-				suma_parcial += cartas[i];
-			}
-		}
-		else
-		{
-			for (int i = 0; i < MAX; i++)
-			{
-				suma_parcial += cartas[i];
-			}
-		}
-		suma_total = cartas[0] + cartas[1] + cartas[2] + cartas[3] + cartas[4] + cartas[5] + cartas[6] + cartas[7];
-		probabilidad = suma_parcial / suma_total;
 
+		}
+		probabilidad = s_parcial / s_total;
+
+		if (puntosMaquina == 7.5)
+		{
+			probabilidad = 1;
+		}
 		if (probabilidad >= 0.5)
 		{
 			probab_mayor_50 = true;
 		}
 	}
-	
-
 	return probab_mayor_50;
 }
 void reducirCartasMazo(tCartasPorAparecer cartas, int& carta_robada)
