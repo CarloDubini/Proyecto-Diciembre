@@ -11,8 +11,19 @@ using namespace std;
 int const HUMANO = 1;
 int const MAQUINA = 2;
 const int MAX = 8;
+const int CARTASMAZO = 40;
+const int MANO = 7;
 
 typedef int tCartasPorAparecer[MAX];
+typedef int tCartasHumano[MANO];
+typedef int tCartasMaquina[MANO];
+typedef int tCartasBaraja[CARTASMAZO];
+typedef struct 
+{
+	tCartasHumano cartas_humano;
+	tCartasMaquina cartas_maquina;
+	tCartasBaraja cartas_baraja;
+}tConjuntoCartas;
 
 int menu();
 int generarMaxCartas(int  max_cartas);
@@ -25,9 +36,11 @@ void modoChumano(ifstream & fich_entrada, tCartasPorAparecer cartas, double & pu
 void modoCmaquina(ifstream & fich_entrada, tCartasPorAparecer cartas, double puntosJugador, double & puntos);
 void iniciarPorAparecer(ifstream & fich_entrada, tCartasPorAparecer cartas);
 void reducirCartasMazo(tCartasPorAparecer cartas, int &carta_robada);
+void inicializa(tConjuntoCartas & cartas);
 bool comprobarPuntosJug(double puntosJugador, double puntos);
 bool Seguir();
 bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas);
+
 
 int main()
 {
@@ -98,6 +111,14 @@ int main()
 				{
 					cout << "Ha ganado la maquina." << endl;
 				}
+			}
+			if (opcion == 4)
+			{
+				tCartasHumano cartas_humano;
+				tCartasMaquina cartas_maquina;
+				tCartasBaraja cartas_baraja;
+				inicializa(cartas_baraja);
+
 
 			}
 			fich_entrada.close();
@@ -113,10 +134,11 @@ int menu() {
 	cout << "1.- Jugar modo A" << endl;
 	cout << "2.- Jugar modo B" << endl;
 	cout << "3.- Jugar modo C" << endl;
+	cout << "4.- Jugar modo D" << endl;
 	cout << "0.- Salir" << endl;
 	cin >> opcion;
-	while (opcion < 0 || opcion > 4) {
-		cout << "Opcion erronea";
+	while (opcion < 0 || opcion > 5) {
+		cout << "Opcion erronea.";
 		cin >> opcion;
 	}
 	return opcion;
@@ -350,46 +372,6 @@ void iniciarPorAparecer(ifstream & fich_entrada, tCartasPorAparecer cartas)
 		}
 	}
 }
-bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas)
-{
-	int s_parcial = 0, s_total = 0, sacar = 0;
-	double probabilidad = 0;
-	bool probab_mayor_50 = false;
-	if (puntosMaquina <= 7.5)
-	{
-		s_total = cartas[0] + cartas[1] + cartas[2] + cartas[3] + cartas[4] + cartas[5] + cartas[6] + cartas[7];
-
-
-		if (puntosMaquina >= 0 && puntosMaquina < 1)
-		{
-			probabilidad = 0;
-		}
-		if (puntosMaquina == 7.5)
-		{
-			probabilidad = 1;
-		}
-		if (puntosMaquina >= 1 && puntosMaquina < 7.5)
-		{
-			if (puntosMaquina >= 1 && puntosMaquina < 2) { sacar = 7; }
-			if (puntosMaquina >= 2 && puntosMaquina < 3) { sacar = 6; }
-			if (puntosMaquina >= 3 && puntosMaquina < 4) { sacar = 5; }
-			if (puntosMaquina >= 4 && puntosMaquina < 5) { sacar = 4; }
-			if (puntosMaquina >= 5 && puntosMaquina < 6) { sacar = 3; }
-			if (puntosMaquina >= 6 && puntosMaquina < 7) { sacar = 2; }
-			if (puntosMaquina == 7) { sacar = 1; }
-			for (int i = sacar; i <= 7.5; i++)
-			{
-				s_parcial += cartas[i];
-			}
-			probabilidad = s_parcial / s_total;
-		}
-		if (probabilidad >= 0.5)
-		{
-			probab_mayor_50 = true;
-		}
-	}
-	return probab_mayor_50;
-}
 void reducirCartasMazo(tCartasPorAparecer cartas, int& carta_robada)
 {
 	if (carta_robada > 7)
@@ -423,3 +405,57 @@ void reducirCartasMazo(tCartasPorAparecer cartas, int& carta_robada)
 		cartas[1] -= 1;
 	}
 }
+void opcionesProbabilidadMaquina(double puntosMaquina, int & sacar)
+{
+	if (puntosMaquina >= 1 || puntosMaquina < 2) { sacar = 7; }
+	if (puntosMaquina >= 2 || puntosMaquina < 3) { sacar = 6; }
+	if (puntosMaquina >= 3 || puntosMaquina < 4) { sacar = 5; }
+	if (puntosMaquina >= 4 || puntosMaquina < 5) { sacar = 4; }
+	if (puntosMaquina >= 5 || puntosMaquina < 6) { sacar = 3; }
+	if (puntosMaquina >= 6 || puntosMaquina < 7) { sacar = 2; }
+	if (puntosMaquina >= 7) { sacar = 1; }
+}
+bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas)
+{
+	int s_parcial = 0, s_total = 0, sacar = 0;
+	double probabilidad = 0;
+	bool probab_mayor_50 = false;
+	if (puntosMaquina <= 7.5)
+	{
+		s_total = cartas[0] + cartas[1] + cartas[2] + cartas[3] + cartas[4] + cartas[5] + cartas[6] + cartas[7];
+
+
+		if (puntosMaquina >= 0 && puntosMaquina < 1)
+		{
+			probabilidad = 0;
+		}
+		if (puntosMaquina == 7.5)
+		{
+			probabilidad = 1;
+		}
+		if (puntosMaquina >= 1 && puntosMaquina < 7.5)
+		{
+			opcionesProbabilidadMaquina(puntosMaquina, sacar)
+				for (int i = sacar; i <= 7.5; i++)
+				{
+					s_parcial += cartas[i];
+				}
+			probabilidad = s_parcial / s_total;
+		}
+		if (probabilidad >= 0.5)
+		{
+			probab_mayor_50 = true;
+		}
+	}
+	return probab_mayor_50;
+}
+//-------------------------------------------ModoD---------------------------------------------
+void inicializa(tConjuntoCartas & cartas_baraja)
+{
+	for (int i = 0; i < CARTASMAZO; i++)
+	{
+		cartas_baraja[i] = i + 1;
+		if (i == 9 || i == 19 || i == 29) { i = 0; }
+	}
+}
+
