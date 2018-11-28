@@ -11,11 +11,11 @@ using namespace std;
 const int HUMANO = 1;
 const int MAQUINA = 2;
 const int MAX = 8;
-const int TAMAﾑOMAZO = 40;
+const int TAMAﾃ前MAZO = 40;
 typedef int tCartasPorAparecer[MAX];//array contador de cartas restantes en el mazo
 typedef int tCartasJugador[7];
 typedef int tCartasMaquina[7];
-typedef int tMazoCartas[TAMAﾑOMAZO];
+typedef int tMazoCartas[TAMAﾃ前MAZO];
 typedef struct
 {
 	tCartasJugador mano_jugador;
@@ -468,7 +468,7 @@ bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas)
 void inicializa(tConjuntoCartas & cartas)
 {
 	int carta = 0;
-	for (int i = 0; i < TAMAﾑOMAZO; i++)
+	for (int i = 0; i < TAMAﾃ前MAZO; i++)
 	{
 		cartas.mazo[i] = carta + 1;
 		carta++;
@@ -483,7 +483,7 @@ void sacar(tConjuntoCartas & cartas, int & carta)
 void incluir(tConjuntoCartas & cartas, int & carta)
 {
 	int i =
-		carta = cartas.mazo[TAMAﾑOMAZO - 1]
+		carta = cartas.mazo[TAMAﾃ前MAZO - 1]
 }
 void crearMazo(const tConjuntoCartas & mazo)
 {
