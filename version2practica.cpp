@@ -7,23 +7,29 @@
 #include <cstdlib>
 #include <ctime>
 using namespace std;
-
-int const HUMANO = 1;
-int const MAQUINA = 2;
+//detectar ganador.
+const int HUMANO = 1;
+const int MAQUINA = 2;
 const int MAX = 8;
-const int CARTASMAZO = 40;
-const int MANO = 7;
-
-typedef int tCartasPorAparecer[MAX];
-typedef int tCartasHumano[MANO];
-typedef int tCartasMaquina[MANO];
-typedef int tCartasBaraja[CARTASMAZO];
-typedef struct 
+const int TAMAÑOMAZO = 40;
+typedef int tCartasPorAparecer[MAX];//array contador de cartas restantes en el mazo
+typedef int tCartasJugador[7];
+typedef int tCartasMaquina[7];
+typedef int tMazoCartas[TAMAÑOMAZO];
+typedef struct
 {
-	tCartasHumano cartas_humano;
-	tCartasMaquina cartas_maquina;
-	tCartasBaraja cartas_baraja;
+	tCartasJugador mano_jugador;
+	tCartasMaquina mano_maquina;
+	tMazoCartas mazo;
+
 }tConjuntoCartas;
+typedef tConjuntoCartas tRecuentoPartidas[100];
+typedef struct
+{
+	tRecuentoPartidas partidas;
+	int cont;
+}tPartidas;
+
 
 int menu();
 int generarMaxCartas(int  max_cartas);
@@ -37,6 +43,10 @@ void modoCmaquina(ifstream & fich_entrada, tCartasPorAparecer cartas, double pun
 void iniciarPorAparecer(ifstream & fich_entrada, tCartasPorAparecer cartas);
 void reducirCartasMazo(tCartasPorAparecer cartas, int &carta_robada);
 void inicializa(tConjuntoCartas & cartas);
+void sacar(tConjuntoCartas & cartas, int & carta);
+void incluir(tConjuntoCartas & cartas, int & carta);
+void crearMazo(const tConjuntoCartas & mazo);
+void guardarResultado(tPartidas);
 bool comprobarPuntosJug(double puntosJugador, double puntos);
 bool Seguir();
 bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas);
@@ -44,7 +54,7 @@ bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas);
 
 int main()
 {
-	int opcion, max_cartas = 0, ganador = 0;
+	int opcion, max_cartas = 0, ganador = 0, carta = 0;
 	double puntosJugador = 0, puntosMaquina = 0;
 	bool terminado = false, seguir = true;
 	string nombre_fich;
@@ -52,78 +62,83 @@ int main()
 	opcion = menu();
 	while (opcion != 0)
 	{
-		cout << "Introduce nombre del mazo: ";
-		cin >> nombre_fich;
-		ifstream fich_entrada;
-		fich_entrada.open(nombre_fich);
-		if (!fich_entrada.is_open()) { cout << "Error de Lectura del mazo " << nombre_fich << endl; }
+		if (opcion == 4)
+		{
+			tConjuntoCartas cartas;
+			tPartidas partida;
+			inicializa(cartas);
+			crearMazo(mazo);
+			sacar(cartas, carta);
+			incluir(cartas, carta);
+
+		}
 		else
 		{
-			if (opcion == 1)
+			// fichero para modos A, B y C.
+			cout << "Introduce nombre del mazo: ";
+			cin >> nombre_fich;
+			ifstream fich_entrada;
+			fich_entrada.open(nombre_fich);
+			if (!fich_entrada.is_open()) { cout << "Error de Lectura del mazo " << nombre_fich << endl; }
+			else
 			{
-				if (puntosMaquina <= 20 || puntosJugador <= 20)
+				if (opcion == 1)
+				{
+					if (puntosMaquina <= 20 || puntosJugador <= 20)
+					{
+						max_cartas = generarMaxCartas(max_cartas);
+						puntosJugador = modoA(fich_entrada, max_cartas);
+						cout << "El jugador tiene: " << puntosJugador << endl;
+						puntosMaquina = modoA(fich_entrada, max_cartas);
+						cout << "La maquina tiene: " << puntosMaquina << endl;
+					}
+					ganador = determinaGanador(puntosJugador, puntosMaquina);
+					if (ganador != 2)
+					{
+						cout << "Ha ganado el jugador." << endl;
+					}
+					else
+					{
+						cout << "Ha ganado la maquina." << endl;
+					}
+				}
+				if (opcion == 2)
 				{
 					max_cartas = generarMaxCartas(max_cartas);
-					puntosJugador = modoA(fich_entrada, max_cartas);
-					cout << "El jugador tiene: " << puntosJugador << endl;
-					puntosMaquina = modoA(fich_entrada, max_cartas);
-					cout << "La maquina tiene: " << puntosMaquina << endl;
+					puntosJugador = modoBhumano(fich_entrada, max_cartas, puntosJugador);
+					puntosMaquina = modoBmaquina(fich_entrada, max_cartas, puntosJugador);
+					ganador = determinaGanador(puntosJugador, puntosMaquina);
+					if (ganador == 1)
+					{
+						cout << "Ha ganado el jugador." << endl;
+					}
+					else
+					{
+						cout << "Ha ganado la maquina." << endl;
+					}
 				}
-				ganador = determinaGanador(puntosJugador, puntosMaquina);
-				if (ganador != 2)
+				if (opcion == 3)
 				{
-					cout << "Ha ganado el jugador." << endl;
+					tCartasPorAparecer cartas;
+					iniciarPorAparecer(fich_entrada, cartas);
+					fich_entrada.close();
+					fich_entrada.open(nombre_fich);
+					modoChumano(fich_entrada, cartas, puntosJugador);
+					modoCmaquina(fich_entrada, cartas, puntosJugador, puntosMaquina);
+					ganador = determinaGanador(puntosJugador, puntosMaquina);
+					if (ganador == 1)
+					{
+						cout << "Ha ganado el jugador." << endl;
+					}
+					else
+					{
+						cout << "Ha ganado la maquina." << endl;
+					}
 				}
-				else
-				{
-					cout << "Ha ganado la maquina." << endl;
-				}
-			}
-			if (opcion == 2)
-			{
-				max_cartas = generarMaxCartas(max_cartas);
-				puntosJugador = modoBhumano(fich_entrada, max_cartas, puntosJugador);
-				puntosMaquina = modoBmaquina(fich_entrada, max_cartas, puntosJugador);
-				ganador = determinaGanador(puntosJugador, puntosMaquina);
-				if (ganador == 1)
-				{
-					cout << "Ha ganado el jugador." << endl;
-				}
-				else
-				{
-					cout << "Ha ganado la maquina." << endl;
-				}
-			}
-			if (opcion == 3)
-			{
-				tCartasPorAparecer cartas;
-				iniciarPorAparecer(fich_entrada, cartas);
 				fich_entrada.close();
-				fich_entrada.open(nombre_fich);
-				modoChumano(fich_entrada, cartas, puntosJugador);
-				modoCmaquina(fich_entrada, cartas, puntosJugador, puntosMaquina);
-				ganador = determinaGanador(puntosJugador, puntosMaquina);
-				if (ganador == 1)
-				{
-					cout << "Ha ganado el jugador." << endl;
-				}
-				else
-				{
-					cout << "Ha ganado la maquina." << endl;
-				}
 			}
-			if (opcion == 4)
-			{
-				tCartasHumano cartas_humano;
-				tCartasMaquina cartas_maquina;
-				tCartasBaraja cartas_baraja;
-				inicializa(cartas_baraja);
-
-
-			}
-			fich_entrada.close();
-			opcion = menu();
 		}
+		opcion = menu();
 	}
 	system("pause");
 	return 0;
@@ -435,11 +450,11 @@ bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas)
 		}
 		if (puntosMaquina >= 1 && puntosMaquina < 7.5)
 		{
-			opcionesProbabilidadMaquina(puntosMaquina, sacar)
-				for (int i = sacar; i <= 7.5; i++)
-				{
-					s_parcial += cartas[i];
-				}
+			opcionesProbabilidadMaquina(puntosMaquina, sacar);
+			for (int i = sacar; i <= 7.5; i++)
+			{
+				s_parcial += cartas[i];
+			}
 			probabilidad = s_parcial / s_total;
 		}
 		if (probabilidad >= 0.5)
@@ -450,12 +465,32 @@ bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas)
 	return probab_mayor_50;
 }
 //-------------------------------------------ModoD---------------------------------------------
-void inicializa(tConjuntoCartas & cartas_baraja)
+void inicializa(tConjuntoCartas & cartas)
 {
-	for (int i = 0; i < CARTASMAZO; i++)
+	int carta = 0;
+	for (int i = 0; i < TAMAÑOMAZO; i++)
 	{
-		cartas_baraja[i] = i + 1;
-		if (i == 9 || i == 19 || i == 29) { i = 0; }
+		cartas.mazo[i] = carta + 1;
+		carta++;
+		if (i == 6 || i == 16 || i == 26) { carta = 9; }
+		if (i == 9 || i == 19 || i == 29) { carta = 0; }
 	}
 }
+void sacar(tConjuntoCartas & cartas, int & carta)
+{
 
+}
+void incluir(tConjuntoCartas & cartas, int & carta)
+{
+	int i =
+		carta = cartas.mazo[TAMAÑOMAZO - 1]
+}
+void crearMazo(const tConjuntoCartas & mazo)
+{
+
+}
+//fin de partida;
+void guardarResultado(tPartidas)
+{
+
+}
