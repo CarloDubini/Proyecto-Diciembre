@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <cstdlib>
 #include <ctime>
+#include <vector>
 using namespace std;
 //detectar ganador.
 const int HUMANO = 1;
@@ -18,8 +19,8 @@ typedef int tCartasMaquina[7];
 typedef int tMazoCartas[TAMAÑOMAZO];
 typedef struct
 {
-	tCartasJugador mano_jugador;
-	tCartasMaquina mano_maquina;
+	tCartasJugador cartasJugador;
+	tCartasMaquina cartasMaquina;
 	tMazoCartas mazo;
 
 }tConjuntoCartas;
@@ -58,6 +59,7 @@ int main()
 	double puntosJugador = 0, puntosMaquina = 0;
 	bool terminado = false, seguir = true;
 	string nombre_fich;
+	srand(time(NULL));
 
 	opcion = menu();
 	while (opcion != 0)
@@ -68,8 +70,8 @@ int main()
 			tPartidas partida;
 			inicializa(cartas);
 			crearMazo(mazo);
-			sacar(cartas, carta);
-			incluir(cartas, carta);
+			modoDhumano(mazo, cartas, cartashumano, puntosJugador);
+			modoDmaquina(mazo, cartas, puntosJugador, cartasMaquina, puntosMaquina);
 
 		}
 		else
@@ -138,6 +140,7 @@ int main()
 				fich_entrada.close();
 			}
 		}
+		puntosJugador = 0, puntosMaquina = 0;
 		opcion = menu();
 	}
 	system("pause");
@@ -160,7 +163,6 @@ int menu() {
 }
 int generarMaxCartas(int max_cartas)
 {
-	srand(time(NULL));
 	max_cartas = 3 + rand() % 3;
 	return max_cartas;
 }
@@ -214,7 +216,6 @@ int determinaGanador(double puntosJugador, double puntosMaquina)
 		if (puntosJugador == puntosMaquina)
 		{
 			cout << "Como se ha obtenido la misma puntuacion el ganador se decidira aleatoriamente." << endl;
-			srand(time(NULL));
 			ganador_aleatorio = 1 + rand() % 2;
 			if (ganador_aleatorio == 1)
 			{
@@ -465,7 +466,26 @@ bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas)
 	return probab_mayor_50;
 }
 //-------------------------------------------ModoD---------------------------------------------
+void modoDhumano(tConjuntoCartas& mazo, tCartasPorAparecer cartas, tConjuntoCartas& cartasHumano, double& puntos)
+{
+
+}
+void modoDmaquina(tConjuntoCartas& mazo, tCartasPorAparecer cartas, double puntosJugador, tConjuntoCartas& cartasMaquina, double& puntos)
 void inicializa(tConjuntoCartas & cartas)
+{
+	tCartasJugador cartasJugador;
+	tCartasMaquina cartasMaquina;
+	tMazoCartas mazo;
+}
+void sacar(tConjuntoCartas & cartas, int & carta)
+{
+	
+}
+void incluir(tConjuntoCartas & cartas, int & carta)
+{
+	
+}
+void crearMazo(const tConjuntoCartas & mazo)
 {
 	int carta = 0;
 	for (int i = 0; i < TAMAÑOMAZO; i++)
@@ -476,16 +496,7 @@ void inicializa(tConjuntoCartas & cartas)
 		if (i == 9 || i == 19 || i == 29) { carta = 0; }
 	}
 }
-void sacar(tConjuntoCartas & cartas, int & carta)
-{
-
-}
-void incluir(tConjuntoCartas & cartas, int & carta)
-{
-	int i =
-		carta = cartas.mazo[TAMAÑOMAZO - 1]
-}
-void crearMazo(const tConjuntoCartas & mazo)
+void barajar()
 {
 
 }
