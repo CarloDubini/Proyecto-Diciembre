@@ -23,7 +23,7 @@ typedef struct
 
 
 int menu();
-void cargarFichero(ifstream & fich_entrada);
+void cargarFichero(ifstream & fich_entrada, string & nombre_fich);
 int generarMaxCartas(int  max_cartas);
 int determinaGanador(double puntosJugador, double puntosMaquina);
 void ejecutarModoA(ifstream & fich_entrada, double & puntosJugador, double & puntosMaquina, int & ganador);
@@ -33,11 +33,11 @@ void mostrarGanador(int ganador);
 void ejecutarModoB(ifstream & fich_entrada, double & puntosMaquina, double & puntosJugador, int & ganador);
 double modoBhumano(ifstream & fich_entrada, int max_cartas, double puntosJugador);
 double modoBmaquina(ifstream & fich_entrada, int max_cartas, double puntosJugador);
-void ejecutarModoC(ifstream& fich_entrada, tCartasPorAparecer & cartas_restantes, string nombre_fich, double & puntosJugador, double & puntosMaquina, int& ganador);
+void ejecutarModoC(ifstream& fich_entrada, tCartasPorAparecer & cartas_restantes, string & nombre_fich, double & puntosJugador, double & puntosMaquina, int& ganador);
 void modoChumano(ifstream & fich_entrada, tCartasPorAparecer cartas, double & puntos);
 void modoCmaquina(ifstream & fich_entrada, tCartasPorAparecer cartas, double puntosJugador, double & puntos);
 void iniciarPorAparecer(ifstream & fich_entrada, tCartasPorAparecer cartas);
-void reducirCartasMazo(tCartasPorAparecer cartas, int &carta_robada);
+void reducirCartasMazo(tCartasPorAparecer cartas, int & carta_robada);
 void inicializa(tConjuntoCartas & cartas);
 void sacar(tConjuntoCartas & cartas, int & carta);
 void incluir(tConjuntoCartas & cartas, int & carta);
@@ -73,12 +73,12 @@ int main()
 			ifstream fich_entrada;
 			if (opcion == 1)
 			{
-				cargarFichero(fich_entrada);
+				cargarFichero(fich_entrada, nombre_fich);
 				ejecutarModoA(fich_entrada, puntosJugador, puntosMaquina, ganador);
 			}
 			if (opcion == 2)
 			{
-				cargarFichero(fich_entrada);
+				cargarFichero(fich_entrada, nombre_fich);
 				ejecutarModoB(fich_entrada, puntosMaquina, puntosJugador, ganador);
 			}
 			if (opcion == 3)
@@ -108,9 +108,8 @@ int menu() {
 	}
 	return opcion;
 }
-void cargarFichero(ifstream & fich_entrada)
+void cargarFichero(ifstream & fich_entrada, string & nombre_fich)
 {
-	string nombre_fich;
 	cout << "Introduce nombre del mazo: ";
 	cin >> nombre_fich;
 	fich_entrada.open(nombre_fich);
@@ -293,9 +292,11 @@ bool comprobarPuntosJug(double puntosJugador, double puntos)
 	return plantarse;
 }
 //-----------------------------------------ModoC------------------------------------------------
-void ejecutarModoC(ifstream& fich_entrada, tCartasPorAparecer & cartas_restantes, string nombre_fich, double & puntosJugador, double & puntosMaquina, int& ganador)
+void ejecutarModoC(ifstream& fich_entrada, tCartasPorAparecer & cartas_restantes, string & nombre_fich, double & puntosJugador, double & puntosMaquina, int& ganador)
 {
+	cargarFichero(fich_entrada, nombre_fich);
 	iniciarPorAparecer(fich_entrada, cartas_restantes);
+	fich_entrada.close();
 	fich_entrada.open(nombre_fich);
 	modoChumano(fich_entrada, cartas_restantes, puntosJugador);
 	modoCmaquina(fich_entrada, cartas_restantes, puntosJugador, puntosMaquina);
@@ -304,7 +305,7 @@ void ejecutarModoC(ifstream& fich_entrada, tCartasPorAparecer & cartas_restantes
 }
 void modoChumano(ifstream& fich_entrada, tCartasPorAparecer cartas_restantes, double & puntos)
 {
-	int carta_robada;
+	int carta_robada = 0;
 	bool seguir = true;
 
 	if (seguir)
@@ -323,7 +324,7 @@ void modoCmaquina(ifstream & fich_entrada, tCartasPorAparecer cartas, double pun
 {
 	int carta_robada;
 	bool pasarse = false;
-	while (puntos < 7.5 && puntosJugador <= 7.5 && !pasarse)
+	while (!pasarse && puntos < 7.5 && puntosJugador <= 7.5)
 	{
 		fich_entrada >> carta_robada;
 		puntos += Valores(carta_robada);
@@ -350,41 +351,18 @@ void iniciarPorAparecer(ifstream & fich_entrada, tCartasPorAparecer cartas_resta
 	{
 		cartas_restantes[i] = 0;
 	}
+	fich_entrada >> leer_cartas_mazo;
 	while (!fich_entrada.eof())
 	{
-		fich_entrada >> leer_cartas_mazo;
 		if (leer_cartas_mazo > 7)
 		{
 			cartas_restantes[0] += 1;
 		}
-		if (leer_cartas_mazo == 1)
+		else
 		{
-			cartas_restantes[1] += 1;
+			cartas_restantes[leer_cartas_mazo] += 1;
 		}
-		if (leer_cartas_mazo == 2)
-		{
-			cartas_restantes[2] += 1;
-		}
-		if (leer_cartas_mazo == 3)
-		{
-			cartas_restantes[3] += 1;
-		}
-		if (leer_cartas_mazo == 4)
-		{
-			cartas_restantes[4] += 1;
-		}
-		if (leer_cartas_mazo == 5)
-		{
-			cartas_restantes[5] += 1;
-		}
-		if (leer_cartas_mazo == 6)
-		{
-			cartas_restantes[6] += 1;
-		}
-		if (leer_cartas_mazo == 7)
-		{
-			cartas_restantes[7] += 1;
-		}
+		fich_entrada >> leer_cartas_mazo;
 	}
 }
 void reducirCartasMazo(tCartasPorAparecer cartas_restantes, int & carta_robada)
@@ -393,31 +371,9 @@ void reducirCartasMazo(tCartasPorAparecer cartas_restantes, int & carta_robada)
 	{
 		cartas_restantes[0] -= 1;
 	}
-	if (carta_robada == 7)
+	else
 	{
-		cartas_restantes[7] -= 1;
-	}
-	if (carta_robada == 6)
-	{
-		cartas_restantes[6] -= 1;
-	}
-	if (carta_robada == 5)
-	{
-		cartas_restantes[5] -= 1;
-	}
-	if (carta_robada == 4)
-	{
-		cartas_restantes[4] -= 1;
-	}
-	if (carta_robada == 3)
-	{
-		cartas_restantes[3] -= 1;
-	}if (carta_robada == 2)
-	{
-		cartas_restantes[2] -= 1;
-	}if (carta_robada == 1)
-	{
-		cartas_restantes[1] -= 1;
+		cartas_restantes[carta_robada] -= 1;
 	}
 }
 void opcionesProbabilidadMaquina(double puntosMaquina, int & sacar)
@@ -432,8 +388,8 @@ void opcionesProbabilidadMaquina(double puntosMaquina, int & sacar)
 }
 bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas_restantes)
 {
-	int s_parcial = 0, s_total = 0, sacar = 0;
-	double probabilidad = 0;
+	int sacar = 0;
+	double probabilidad = 0, s_parcial = 0, s_total = 0;
 	bool probab_mayor_50 = false;
 	if (puntosMaquina <= 7.5)
 	{
