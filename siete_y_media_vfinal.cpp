@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <list>
 #include <istream>
 #include <string>
 #include <conio.h>
@@ -39,15 +40,16 @@ void modoCmaquina(ifstream & fich_entrada, tCartasPorAparecer cartas, double pun
 void iniciarPorAparecer(ifstream & fich_entrada, tCartasPorAparecer cartas);
 void reducirCartasMazo(tCartasPorAparecer cartas, int & carta_robada);
 void inicializa(tConjuntoCartas & cartas);
-void sacar(tConjuntoCartas & cartas, int & carta);
-void incluir(tConjuntoCartas & cartas, int & carta);
+void sacar(tConjuntoCartas & mazo, int & carta);
+void incluir(tConjuntoCartas & mazo, int & carta);
 void crearMazo(tConjuntoCartas & mazo);
 void mostrarMazo(tConjuntoCartas & mazo);
 void barajar(tConjuntoCartas & mazo);
-void ejecutarModoD(tCartasPorAparecer& cartas_restantes, double & puntosJugador, double & puntosMaquina);
+void ejecutarModoD(tCartasPorAparecer& cartas_restantes, double & puntosJugador, double & puntosMaquina, int & ganador);
 void modoDhumano(tConjuntoCartas& mazo, tCartasPorAparecer cartas, tConjuntoCartas& cartasHumano, double& puntos);
 void modoDmaquina(tConjuntoCartas& mazo, tCartasPorAparecer cartas, double puntosJugador, tConjuntoCartas& cartasMaquina, double& puntos);
 bool comprobarPuntosJug(double puntosJugador, double puntos);
+void iniciarCartasRestantes_D(const tConjuntoCartas & mazo, tCartasPorAparecer cartas_restantes);
 bool Seguir();
 bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas);
 
@@ -65,7 +67,7 @@ int main()
 	{
 		if (opcion == 4)
 		{
-			ejecutarModoD(cartas_restantes, puntosJugador, puntosMaquina);
+			ejecutarModoD(cartas_restantes, puntosJugador, puntosMaquina, ganador);
 		}
 
 		else
@@ -308,16 +310,13 @@ void modoChumano(ifstream& fich_entrada, tCartasPorAparecer cartas_restantes, do
 	int carta_robada = 0;
 	bool seguir = true;
 
-	if (seguir)
+	while (seguir)
 	{
-		while (seguir)
-		{
-			fich_entrada >> carta_robada;
-			puntos += Valores(carta_robada);
-			cout << "El jugador ha robado un " << carta_robada << " y tiene " << puntos << endl;
-			reducirCartasMazo(cartas_restantes, carta_robada);
-			seguir = Seguir();
-		}
+		fich_entrada >> carta_robada;
+		puntos += Valores(carta_robada);
+		cout << "El jugador ha robado un " << carta_robada << " y tiene " << puntos << endl;
+		reducirCartasMazo(cartas_restantes, carta_robada);
+		seguir = Seguir();
 	}
 }
 void modoCmaquina(ifstream & fich_entrada, tCartasPorAparecer cartas, double puntosJugador, double & puntos)
@@ -419,45 +418,100 @@ bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas_res
 	return probab_mayor_50;
 }
 //-------------------------------------------ModoD---------------------------------------------
-void ejecutarModoD(tCartasPorAparecer& cartas_restantes, double & puntosJugador, double & puntosMaquina)
+void ejecutarModoD(tCartasPorAparecer& cartas_restantes, double & puntosJugador, double & puntosMaquina, int & ganador)
 {
 	tConjuntoCartas mazo;
 	tConjuntoCartas cartasHumano;
 	tConjuntoCartas cartasMaquina;
+	ofstream guardar_partida;
 	crearMazo(mazo);
+	iniciarCartasRestantes_D(mazo, cartas_restantes);
 	mostrarMazo(mazo);
 	modoDhumano(mazo, cartas_restantes, cartasHumano, puntosJugador);
 	modoDmaquina(mazo, cartas_restantes, puntosJugador, cartasMaquina, puntosMaquina);
+	ganador = determinaGanador(puntosJugador, puntosMaquina);
+	mostrarGanador(ganador);
+	guardarResultado(guardar_partida, cartasHumano, puntosJugador, cartasMaquina, puntosMaquina);
 }
-void modoDhumano(tConjuntoCartas& mazo, tCartasPorAparecer cartas_restantes, tConjuntoCartas& cartasHumano, double& puntos)
+void modoDhumano(tConjuntoCartas& mazo, tCartasPorAparecer cartas_restantes, tConjuntoCartas & cartasHumano, double& puntos)
 {
-
+	bool seguir = true;
+	int carta_robada = 0;
+	cartasHumano.cont = 0;
+	tConjuntoCartas &cartas = cartasHumano;
+	while (seguir)
+	{
+		sacar(mazo, carta_robada);
+		incluir(cartas, carta_robada);
+		puntos += Valores(carta_robada);
+		cout << "El jugador ha robado un " << carta_robada << " y tiene " << puntos << endl;
+		reducirCartasMazo(cartas_restantes, carta_robada);
+		seguir = Seguir();
+	}
 }
 void modoDmaquina(tConjuntoCartas& mazo, tCartasPorAparecer cartas_restantes, double puntosJugador, tConjuntoCartas& cartasMaquina, double& puntos)
 {
-
+	int carta_robada = 0;
+	bool pasarse = false;
+	cartasMaquina.cont = 0;
+	tConjuntoCartas &cartas = cartasMaquina;
+	while (!pasarse)
+	{
+		sacar(mazo, carta_robada);
+		incluir(cartas, carta_robada);
+		puntos += Valores(carta_robada);
+		cout << "La maquina ha robado un " << carta_robada << " y tiene " << puntos << endl;
+		reducirCartasMazo(cartas_restantes, carta_robada);
+		if (!pasarse && puntos > puntosJugador)
+		{
+			pasarse = true;
+		}
+		if (puntos == puntosJugador && puntos < 7.5)
+		{
+			pasarse = esProbablePasarse(puntos, cartas_restantes);
+		}
+		else
+		{
+			pasarse = esProbablePasarse(puntos, cartas_restantes);
+		}
+	}
 }
 void inicializa(tConjuntoCartas & mazo)
 {
 	int cantidad = 1;
 	mazo.cont = 0;
-	for (int i = 0; i < TAMBARAJA; i++)
+	for (int i = 0; i < 28; i++)
 	{
 		mazo.cartas[i] = cantidad;
-		if (i == 3 || i == 7 || i == 11 || i == 15 || i == 19 || i == 23 || i == 27 || i == 31 || i == 35 || i == 39)
+		if (i == 3 || i == 7 || i == 11 || i == 15 || i == 19 || i == 23)
+		{
+			cantidad++;
+		}
+		mazo.cont++;
+	}
+	cantidad = 10;
+	for (int i = mazo.cont; i < TAMBARAJA; i++)
+	{
+		mazo.cartas[i] = cantidad;
+		if (i == 31 || i == 35)
 		{
 			cantidad++;
 		}
 		mazo.cont++;
 	}
 }
-void sacar(tConjuntoCartas & cartas, int & carta)
+void sacar(tConjuntoCartas & mazo, int & carta_robada)
 {
-
+	int i = mazo.cont - 1;
+	carta_robada = mazo.cartas[i];
+	mazo.cartas[TAMBARAJA - 1 - i];
+	mazo.cont -= 1;
 }
-void incluir(tConjuntoCartas & cartas, int & carta)
+void incluir(tConjuntoCartas & cartas, int & carta_robada)
 {
-
+	int i = cartas.cont;
+	cartas.cartas[i] = carta_robada;
+	cartas.cont += 1;
 }
 void crearMazo(tConjuntoCartas & mazo)
 {
@@ -469,26 +523,49 @@ void barajar(tConjuntoCartas & mazo)
 	int i1 = 0, i2 = 0, aux;
 	i1 = rand() % 39;
 	i2 = rand() % 39;
-	while (i1 == i2)
+	if (i1 == i2)
 	{
 		i1 = rand() % 39;
 		i2 = rand() % 39;
 	}
-	while (i1 != i2)
+	else
 	{
 		for (int i = 0; i < TAMBARAJA; i++)
 		{
 			aux = mazo.cartas[i1];
 			mazo.cartas[i1] = mazo.cartas[i2];
 			mazo.cartas[i2] = aux;
+			i1 = rand() % 39;
+			i2 = rand() % 39;
 		}
 	}
 }
 void mostrarMazo(tConjuntoCartas & mazo)
 {
-
+	for (int i = 0; i < TAMBARAJA; i++)
+	{
+		cout << mazo.cartas[i] << " ";
+	}
+	cout << endl;
 }
-void guardarResultado()
+void iniciarCartasRestantes_D(const tConjuntoCartas & mazo, tCartasPorAparecer cartas_restantes)
+{
+	int leer_cartas_mazo;
+	for (int i = 0; i < MAX; i++) { cartas_restantes[i] = 0; }
+	for (int i = 0; i < mazo.cont; i++)
+	{
+		leer_cartas_mazo = mazo.cartas[i];
+		if (leer_cartas_mazo > 7)
+		{
+			cartas_restantes[0] += 1;
+		}
+		else if (leer_cartas_mazo >= 0 && leer_cartas_mazo <= 7)
+		{
+			cartas_restantes[leer_cartas_mazo] += 1;
+		}
+	}
+}
+void guardarResultado(ofstream & guardar_partida, tConjuntoCartas & cartasJugador, double & puntosJugador, tConjuntoCartas& cartasMaquina, double& puntosMaquina)
 {
 
 }
