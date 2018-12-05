@@ -22,7 +22,6 @@ typedef struct
 }tConjuntoCartas;
 
 
-
 int menu();
 void cargarFichero(ifstream & fich_entrada, string & nombre_fich);
 int generarMaxCartas(int  max_cartas);
@@ -52,7 +51,8 @@ bool comprobarPuntosJug(double puntosJugador, double puntos);
 void iniciarCartasRestantes_D(const tConjuntoCartas & mazo, tCartasPorAparecer cartas_restantes);
 bool Seguir();
 bool esProbablePasarse(double puntosMaquina, const tCartasPorAparecer cartas);
-
+void guardarResultado(ofstream & guardar_partida, tConjuntoCartas & cartasJugador, double & puntosJugador, tConjuntoCartas& cartasMaquina, double& puntosMaquina);
+void mostrarCartas(tConjuntoCartas& cartas);
 
 int main()
 {
@@ -131,7 +131,6 @@ int determinaGanador(double puntosJugador, double puntosMaquina)
 	int ganador = 0, ganador_aleatorio = 0;
 	while (ganador != 2 && ganador != 1)
 	{
-		// ambos por encima o debajo
 		if (puntosJugador < 7.5 && puntosMaquina < 7.5)
 		{
 			if (puntosJugador > puntosMaquina)
@@ -154,7 +153,6 @@ int determinaGanador(double puntosJugador, double puntosMaquina)
 				ganador = MAQUINA;
 			}
 		}
-		// uno por encima y otro por debajo
 		if (puntosMaquina > 7.5 && puntosJugador < 7.5)
 		{
 			ganador = HUMANO;
@@ -163,7 +161,6 @@ int determinaGanador(double puntosJugador, double puntosMaquina)
 		{
 			ganador = MAQUINA;
 		}
-		//uno con 7.5 puntos y el otro distinto
 		if (puntosJugador == 7.5 && puntosMaquina != 7.5)
 		{
 			ganador = HUMANO;
@@ -172,7 +169,6 @@ int determinaGanador(double puntosJugador, double puntosMaquina)
 		{
 			ganador = MAQUINA;
 		}
-		//ambos obtienen 7.5 o misma puntuacion
 		if (puntosJugador == puntosMaquina)
 		{
 			cout << "Como se ha obtenido la misma puntuacion el ganador se decidira aleatoriamente." << endl;
@@ -246,13 +242,11 @@ double modoBhumano(ifstream & fich_entrada, int max_cartas, double puntosJugador
 {
 	bool seguir = true;
 	int carta_robada = 0;
-	double valor = 0;
 
 	for (int i = 0; i <= max_cartas && seguir && puntosJugador <= 7.5; i++)
 	{
 		fich_entrada >> carta_robada;
-		valor = Valores(carta_robada);
-		puntosJugador += valor;
+		puntosJugador += Valores(carta_robada);
 		cout << "El jugador ha robado un " << carta_robada << " y tiene " << puntosJugador << endl;
 		seguir = Seguir();
 	}
@@ -332,10 +326,6 @@ void modoCmaquina(ifstream & fich_entrada, tCartasPorAparecer cartas, double pun
 		if (puntos > puntosJugador && !pasarse)
 		{
 			pasarse = true;
-		}
-		if (puntos == puntosJugador && puntos < 7.5)
-		{
-			pasarse = esProbablePasarse(puntos, cartas);
 		}
 		else
 		{
@@ -429,6 +419,21 @@ void ejecutarModoD(tCartasPorAparecer& cartas_restantes, double & puntosJugador,
 	mostrarMazo(mazo);
 	modoDhumano(mazo, cartas_restantes, cartasHumano, puntosJugador);
 	modoDmaquina(mazo, cartas_restantes, puntosJugador, cartasMaquina, puntosMaquina);
+	if (puntosMaquina == puntosJugador)
+	{
+		if (cartasHumano.cont - 1 < cartasMaquina.cont - 1)
+		{
+			ganador = HUMANO;
+		}
+		else if (cartasHumano.cont - 1 > cartasMaquina.cont - 1)
+		{
+			ganador = MAQUINA;
+		}
+		else
+		{
+			ganador = determinaGanador(puntosJugador, puntosMaquina);
+		}
+	}
 	ganador = determinaGanador(puntosJugador, puntosMaquina);
 	mostrarGanador(ganador);
 	guardarResultado(guardar_partida, cartasHumano, puntosJugador, cartasMaquina, puntosMaquina);
@@ -444,7 +449,8 @@ void modoDhumano(tConjuntoCartas& mazo, tCartasPorAparecer cartas_restantes, tCo
 		sacar(mazo, carta_robada);
 		incluir(cartas, carta_robada);
 		puntos += Valores(carta_robada);
-		cout << "El jugador ha robado un " << carta_robada << " y tiene " << puntos << endl;
+		cout << "El jugador ha robado un " << carta_robada << " y sus cartas son ";
+		mostrarCartas(cartas);
 		reducirCartasMazo(cartas_restantes, carta_robada);
 		seguir = Seguir();
 	}
@@ -460,15 +466,12 @@ void modoDmaquina(tConjuntoCartas& mazo, tCartasPorAparecer cartas_restantes, do
 		sacar(mazo, carta_robada);
 		incluir(cartas, carta_robada);
 		puntos += Valores(carta_robada);
-		cout << "La maquina ha robado un " << carta_robada << " y tiene " << puntos << endl;
+		cout << "La maquina ha robado un " << carta_robada << " y sus cartas son ";
+		mostrarCartas(cartas);
 		reducirCartasMazo(cartas_restantes, carta_robada);
 		if (!pasarse && puntos > puntosJugador)
 		{
 			pasarse = true;
-		}
-		if (puntos == puntosJugador && puntos < 7.5)
-		{
-			pasarse = esProbablePasarse(puntos, cartas_restantes);
 		}
 		else
 		{
@@ -567,5 +570,15 @@ void iniciarCartasRestantes_D(const tConjuntoCartas & mazo, tCartasPorAparecer c
 }
 void guardarResultado(ofstream & guardar_partida, tConjuntoCartas & cartasJugador, double & puntosJugador, tConjuntoCartas& cartasMaquina, double& puntosMaquina)
 {
+	int num_partida;
 
+
+}
+void mostrarCartas(tConjuntoCartas& cartas)
+{
+	for (int i = 0; i < cartas.cont; i++)
+	{
+		cout << cartas.cartas[i] << " ";
+	}
+	cout << endl;
 }
